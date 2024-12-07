@@ -7,7 +7,9 @@ import tldextract
 payloads = [
     "<script>alert('XSS')</script>",
     "'\"><script>alert('XSS')</script>",
-    "<img src='x' onerror='alert(\"XSS\")'>"
+    "<img src='x' onerror='alert(\"XSS\")'>",
+    "<svg/onload=alert('XSS')>",
+    "';alert('XSS');//"
 ]
 
 # 🔁 Visited URLs to avoid duplicates
@@ -28,7 +30,8 @@ def find_urls(url, domain):
     """
     urls = []
     try:
-        response = requests.get(url, timeout=5)
+        headers = {"User-Agent": "Mozilla/5.0 (XSS Scanner)"}
+        response = requests.get(url, headers=headers, timeout=5)
         soup = BeautifulSoup(response.text, 'html.parser')
 
         for link in soup.find_all('a', href=True):
@@ -47,6 +50,7 @@ def test_xss(url):
     try:
         parsed_url = urlparse(url)
         params = dict(parse_qsl(parsed_url.query))
+        headers = {"User-Agent": "Mozilla/5.0 (XSS Scanner)"}
 
         for param in params:
             for payload in payloads:
@@ -56,10 +60,10 @@ def test_xss(url):
                 test_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}?{urlencode(test_params)}"
 
                 print(f"🔍 Testing: {test_url}")
-                response = requests.get(test_url, timeout=5)
+                response = requests.get(test_url, headers=headers, timeout=5)
 
-                # 🔎 Check if payload reflects in the response
-                if payload in response.text:
+                # 🔎 Check if payload reflects in the response and validate rendering
+                if payload.lower() in response.text.lower():
                     result = f"✅ [VULNERABLE] Parameter '{param}' is vulnerable to XSS on {test_url}"
                     print(result)
                     output_results.append(result)

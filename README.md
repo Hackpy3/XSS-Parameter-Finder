@@ -18,7 +18,7 @@
 1. Clone the repository:  
    ```bash
    git clone https://github.com/your-username/XSS-Parameter-Finder.git
-   cd xss-parameter-finder
+   cd XSS-Parameter-Finder
    ```  
 
 2. Install the required dependencies:  

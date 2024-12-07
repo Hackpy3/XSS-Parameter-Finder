@@ -17,7 +17,7 @@
 
 1. Clone the repository:  
    ```bash
-   git clone https://github.com/your-username/XSS-Parameter-Finder.git
+   git clone git@github.com:Hackpy3/XSS-Parameter-Finder.git
    cd XSS-Parameter-Finder
    ```  
 

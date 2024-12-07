@@ -62,21 +62,6 @@
      ❌ Error testing https://sub.example.com/test: Connection Timeout
      ```  
 
----
-
-## 📋 **XSS Payloads**  
-
-This tool tests parameters with various XSS payloads, including but not limited to:  
-
-- `<script>alert('XSS')</script>`  
-- `"><img src='x' onerror='alert("XSS")'>`  
-- `"><svg onload=alert(1)>`  
-- `"><button onclick=alert(1)>`  
-- `"><video src="x" onerror=alert(1)>`  
-
-Feel free to add your own payloads to the `payloads` list in the script.  
-
----
 
 ## ⚠️ **Disclaimer**  
 

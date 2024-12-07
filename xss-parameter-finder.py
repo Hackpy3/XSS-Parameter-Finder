@@ -84,7 +84,7 @@ def crawl_and_test(domain, output_file):
         urls_to_test.extend(urls)
         for found_url in urls:
             test_xss(found_url)
-
+    
     # Save results to the output file
     with open(output_file, 'w') as f:
         f.write("\n".join(output_results))
@@ -94,10 +94,10 @@ if __name__ == "__main__":
     print("🌟 Welcome to XSS Parameter Finder 🌟")
     print("🔑 Example Input: https://example.com")
     print("⚠️ Disclaimer: Use this tool only for educational purposes and authorized testing!")
-
+    
     target_domain = input("🔗 Enter the target domain (e.g., https://example.com): ")
     output_file = input("📂 Enter the name of the output file (e.g., results.txt): ")
-
+    
     if target_domain and output_file:
         crawl_and_test(target_domain, output_file)
     else:

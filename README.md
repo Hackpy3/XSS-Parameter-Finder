@@ -28,7 +28,7 @@
 
 3. Run the tool:  
    ```bash
-   python xss_domain_scanner.py
+   python xss-parameter-finder.py
    ```  
 
 ---
@@ -37,7 +37,7 @@
 
 1. Run the script:  
    ```bash
-   python xss_domain_scanner.py
+   python xss-parameter-finder.py
    ```  
 
 2. Provide the target domain and output file name when prompted:  

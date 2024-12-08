@@ -3,6 +3,7 @@ from urllib.parse import urljoin, urlparse, urlencode, parse_qsl
 from bs4 import BeautifulSoup
 import tldextract
 from concurrent.futures import ThreadPoolExecutor
+import time
 
 # 🎯 XSS Payloads for testing
 payloads = [
@@ -16,6 +17,22 @@ payloads = [
 # 🔁 Visited URLs to avoid duplicates
 visited_urls = set()
 output_results = []
+
+# ASCII Banner
+ascii_banner = r"""
+ __  __  _____   _____
+ \ \/ / / ____| / ____|
+  \  / | (___  | (___  
+  /  \  \___ \  \___ \ 
+ /  /\ \ ____) | ____) |
+/_/  \_\_____/ |_____/
+"""
+
+def animate_ascii_banner(banner):
+    """Display the ASCII banner with an animation effect."""
+    for line in banner.splitlines():
+        print(line)
+        time.sleep(0.1)  # Adjust the speed of the animation
 
 def is_subdomain(url, domain):
     """
@@ -111,6 +128,8 @@ def crawl_and_test(domain, output_file="xss_results.txt", max_depth=3):
     print(f"\n📁 Results saved automatically to: {output_file}")
 
 if __name__ == "__main__":
+    animate_ascii_banner(ascii_banner)  # Display animated ASCII banner
+    
     print("🌟 Welcome to XSS Parameter Finder 🌟")
     print("🔑 Example Input: https://example.com")
     print("⚠️ Disclaimer: Use this tool only for educational purposes and authorized testing!")

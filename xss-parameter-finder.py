@@ -2,6 +2,7 @@ import requests
 from urllib.parse import urljoin, urlparse, urlencode, parse_qsl
 from bs4 import BeautifulSoup
 import tldextract
+from concurrent.futures import ThreadPoolExecutor
 
 # 🎯 XSS Payloads for testing
 payloads = [
@@ -77,17 +78,32 @@ def test_xss(url):
         output_results.append(error_message)
     return False
 
-def crawl_and_test(domain, output_file="xss_results.txt"):
+def crawl_and_test(domain, output_file="xss_results.txt", max_depth=3):
     """
     🔍 Crawl a domain and its subdomains to find potential XSS vulnerabilities.
     """
     print(f"🚀 Starting crawl on domain: {domain}")
     urls_to_test = [domain]
-    for url in urls_to_test:
-        urls = find_urls(url, domain)
-        urls_to_test.extend(urls)
-        for found_url in urls:
-            test_xss(found_url)
+    depth = 0
+
+    # ThreadPoolExecutor for parallel URL testing
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        while urls_to_test and depth < max_depth:
+            current_urls = urls_to_test[:10]  # Limit to first 10 URLs at each depth
+            urls_to_test = urls_to_test[10:]
+
+            # Crawl URLs and test them in parallel
+            futures = [executor.submit(find_urls, url, domain) for url in current_urls]
+            for future in futures:
+                urls = future.result()
+                urls_to_test.extend(urls)
+            
+            # Test the URLs for XSS vulnerabilities
+            futures = [executor.submit(test_xss, url) for url in current_urls]
+            for future in futures:
+                future.result()  # Wait for the result
+
+            depth += 1
     
     # Save results to the output file automatically
     with open(output_file, 'w') as f:

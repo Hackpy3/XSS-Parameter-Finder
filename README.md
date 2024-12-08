@@ -96,4 +96,18 @@ For issues, suggestions, or feedback, please open an issue on the [GitHub reposi
 
 ---
 
+## ⚠️ Disclaimer  
+
+This tool is for **educational purposes** and **authorized testing** only. Unauthorized use is strictly prohibited and may violate local, state, or federal laws.  
+
+---
+
+Made ❤️ by Mamun
+
+--- 
+
+Let me know if you need further adjustments or more features added! 😊
+
+--- 
+
 Happy Testing! 🎯

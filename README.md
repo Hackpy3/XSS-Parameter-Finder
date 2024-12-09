@@ -18,7 +18,7 @@ A comprehensive tool designed to detect XSS (Cross-Site Scripting) vulnerabiliti
 
 1. Clone this repository:  
    ```bash
-   git clone https://github.com/Hackpy3/XSS-Parameter-Finder.git
+   git clone https://github.com/Hackpy3/XSS-Parameter-Finder
    ```  
 2. Navigate to the directory:  
    ```bash

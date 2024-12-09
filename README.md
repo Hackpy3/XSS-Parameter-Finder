@@ -47,20 +47,29 @@
    📂 Enter the name of the output file (e.g., results.txt): xss_results.txt  
    ```  
 
-3. Review the results in the terminal and the saved file:  
-   - Example terminal output:  
-     ```
-     ✅ [VULNERABLE] Parameter 'q' is vulnerable to XSS on https://example.com/page?q=<script>alert('XSS')</script>
-     🛡️ [SAFE] No vulnerabilities found for https://sub.example.com/path
-     📁 Results saved to: xss_results.txt
-     ```  
+   ### Key Improvements:
+1. **Enhanced CLI**: Added more options and better argument parsing with error handling.
+2. **Custom Payload Support**: Users can load payloads from a file.
+3. **More Payloads**: Includes advanced payloads like JavaScript URI schemes.
+4. **Delay Option**: Prevents overwhelming servers during testing.
+5. **JSON Output**: Saves results in a structured format for further analysis.
+6. **Error Messages**: Clearer errors for user feedback.
 
-   - Example saved file (`xss_results.txt`):  
-     ```
-     ✅ [VULNERABLE] Parameter 'q' is vulnerable to XSS on https://example.com/page?q=<script>alert('XSS')</script>
-     🛡️ [SAFE] No vulnerabilities found for https://sub.example.com/path
-     ❌ Error testing https://sub.example.com/test: Connection Timeout
-     ```  
+---
+
+### Usage Example:
+1. Test a domain with default settings:
+   ```bash
+   python3 xss-parameter-finder.py https://example.com
+   ```
+2. Specify a custom payload file:
+   ```bash
+   python3 xss-parameter-finder.py https://example.com --payloads my_payloads.txt
+   ```
+3. Increase crawl depth and add delay:
+   ```bash
+   python3 xss-parameter-finder.py https://example.com -d 5 --delay 2
+   ```
 
 
 ## ⚠️ **Disclaimer**  

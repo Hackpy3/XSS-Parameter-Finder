@@ -1,111 +1,101 @@
-# 🛡️ Professional XSS Parameter Finder  
+# 🔍 XSS Parameter Finder
 
-A comprehensive tool designed to detect XSS (Cross-Site Scripting) vulnerabilities on websites. With advanced crawling, payload testing, and custom configurations, this tool is ideal for professionals and enthusiasts.  
+## 🌟 Overview
 
----
-
-## 🚀 Features  
-- 🔍 **Crawls entire domains and subdomains** to find internal links.  
-- 🧪 **Tests XSS payloads** against all parameters in the URLs.  
-- 🛠️ **Customizable payloads** via external files.  
-- 🕒 **Adjustable delay** between requests to prevent overloading servers.  
-- 📁 **Saves results in JSON format** for detailed analysis.  
-- 🌐 Designed for professional and ethical use only.  
+**XSS Parameter Finder** is a Python-based tool designed to scan and detect Cross-Site Scripting (XSS) vulnerabilities in web applications. The tool supports crawling web pages, testing parameters with customizable payloads, and integrating Wayback Machine to find additional archived URLs for testing.
 
 ---
 
-## 🛠️ Installation  
+## ✨ Features
 
-1. Clone this repository:  
+- 🌐 **Crawl Websites**: Automatically discover links and parameters from a target domain.
+- 🛡️ **Test for XSS**: Use default or custom payloads to test for XSS vulnerabilities.
+- 🕰️ **Wayback Machine Integration**: Fetch archived URLs for testing with `waybackurls`.
+- 📂 **Save Results**: Export findings to a JSON file.
+- 🚀 **User-Friendly Menu**: Simple configuration options through an interactive menu.
+
+---
+
+## 📋 Requirements
+
+Install the necessary Python libraries:
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 🚀 Installation
+
+1. **Clone the Repository**:
    ```bash
    git clone https://github.com/Hackpy3/XSS-Parameter-Finder
-   ```  
-2. Navigate to the directory:  
-   ```bash
    cd XSS-Parameter-Finder
-   ```  
-3. Install the required dependencies:  
+   ```
+
+2. **Install Dependencies**:
    ```bash
    pip install -r requirements.txt
-   ```  
+   ```
+
+3. **(Optional) Install `waybackurls`** for fetching archived URLs:
+   ```bash
+   go install github.com/tomnomnom/waybackurls@latest
+   ```
 
 ---
 
-## 📖 Usage  
+## 🔧 Usage
 
+Run the script:
 ```bash
-python3 xss.py [-h] [-o OUTPUT] [-d DEPTH] [--delay DELAY] [--payloads PAYLOADS] domain
-```  
+python m.py
+```
 
-### **Positional Arguments:**  
-| Argument | Description |  
-|----------|-------------|  
-| `domain` | Target domain (e.g., `https://example.com`). |  
-
-### **Options:**  
-| Option | Description | Default Value |  
-|--------|-------------|---------------|  
-| `-h, --help` | Show the help message and exit. | — |  
-| `-o, --output OUTPUT` | Output file name for results. | `xss_results.json` |  
-| `-d, --depth DEPTH` | Maximum crawl depth. | `3` |  
-| `--delay DELAY` | Delay between requests in seconds. | `1` |  
-| `--payloads PAYLOADS` | File containing custom XSS payloads. | None (Uses default payloads). |  
+### 🖥️ Menu Options
+1. **Domain**: Enter the target URL (e.g., `https://example.com`).
+2. **Payloads**: 
+   - Option 1: Use default payloads.
+   - Option 2: Load custom payloads from a `.txt` file.
+3. **Output**: Specify the result file name (default: `result.json`).
+4. **Delay**: Set delay between requests (default: `1.0` seconds).
 
 ---
 
-### 🛠️ Examples  
+## 💡 Example
 
-1. **Basic Scan:**  
+1. **Run the Script**:
    ```bash
-   python3 xss-parameter-finder.py https://example.com
-   ```  
+   python m.py
+   ```
 
-2. **Increase Depth and Add Delay:**  
-   ```bash
-   python3 xss-parameter-finder.py https://example.com -d 5 --delay 2
-   ```  
+2. **Menu Interaction**:
+   - Enter domain: `https://example.com`
+   - Choose payloads: `1` (Default Payloads)
+   - Specify output file: `xss_results.json`
+   - Set delay: `1.5`
 
-3. **Custom Payloads:**  
-   ```bash
-   python3 xss-parameter-finder.py https://example.com --payloads my_payloads.txt
-   ```  
+3. **Sample Output**:
+   ```json
+   [
+       {
+           "url": "https://example.com/search?q=<script>alert('XSS')</script>",
+           "parameter": "q",
+           "payload": "<script>alert('XSS')</script>",
+           "status": "VULNERABLE"
+       }
+   ]
+   ```
 
-4. **Custom Output File:**  
-   ```bash
-   python3 xss-parameter-finder.py https://example.com -o custom_results.json
-   ```  
-
----
-
-## 📝 Example Output  
-Results will be saved in JSON format for easy parsing and analysis.  
-
-```json
-[
-    {
-        "url": "https://example.com/vulnerable?page=<script>alert('XSS')</script>",
-        "parameter": "page",
-        "payload": "<script>alert('XSS')</script>",
-        "status": "VULNERABLE"
-    }
-]
-```  
+4. **View Results**:
+   Results will be saved in `xss_results.json`.
 
 ---
 
-## ⚠️ Disclaimer  
-**This tool is intended for educational purposes and authorized testing only.** Do not use it on domains or applications without explicit permission. Misuse of this tool is illegal.  
+## ⚠️ Disclaimer
+
+This tool is intended for **educational purposes** and **ethical penetration testing** only. **Unauthorized use** is strictly prohibited. Always ensure you have the proper permissions before testing any website.
 
 ---
 
-## 🛠️ Contribution  
-Contributions are welcome! Feel free to submit issues or pull requests to enhance the functionality.  
-
----
-
-## 📜 License  
-This project is licensed under the MIT License. See `LICENSE` for more details.  
-
---- 
-
-Made ❤️ by [Mamun]  
+Let me know if you'd like to include more details or additional emojis! 🎉

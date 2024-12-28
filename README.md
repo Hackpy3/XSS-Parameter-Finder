@@ -16,13 +16,6 @@
 
 ---
 
-## 📋 Requirements
-
-Install the necessary Python libraries:
-```bash
-pip install -r requirements.txt
-```
-
 ---
 
 ## 🚀 Installation
@@ -38,35 +31,17 @@ pip install -r requirements.txt
    pip install -r requirements.txt
    ```
 
-3. **(Optional) Install `waybackurls`** for fetching archived URLs:
+3. Install `waybackurls`** for fetching archived URLs:
    ```bash
    go install github.com/tomnomnom/waybackurls@latest
    ```
 
 ---
-
-## 🔧 Usage
-
-Run the script:
-```bash
-python m.py
-```
-
-### 🖥️ Menu Options
-1. **Domain**: Enter the target URL (e.g., `https://example.com`).
-2. **Payloads**: 
-   - Option 1: Use default payloads.
-   - Option 2: Load custom payloads from a `.txt` file.
-3. **Output**: Specify the result file name (default: `result.json`).
-4. **Delay**: Set delay between requests (default: `1.0` seconds).
-
----
-
 ## 💡 Example
 
 1. **Run the Script**:
    ```bash
-   python m.py
+   python xss_paramiter.py
    ```
 
 2. **Menu Interaction**:
